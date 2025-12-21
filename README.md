@@ -5,15 +5,11 @@ Secure environment variable management with encryption and sharing capabilities.
 ## Prerequisites
 
 - **Node.js 18+**
-- **C++ build tools** (required for argon2 encryption):
-  - **macOS**: `xcode-select --install`
-  - **Ubuntu/Debian**: `sudo apt install build-essential python3`
-  - **Windows**: `npm install -g windows-build-tools` (run as Administrator)
 
 ## Installation
 
 ```bash
-npm install -g env-vault
+npm install -g @bora-technologies/env-vault
 ```
 
 ## Quick Start
@@ -114,7 +110,7 @@ env-vault get .env                # Writes to .env file
 
 - **End-to-end encryption**: Secrets are encrypted locally before storage
 - **Zero-knowledge**: Private keys never leave your device
-- **Proven cryptography**: X25519 + AES-256-GCM + Argon2id
+- **Proven cryptography**: X25519 + AES-256-GCM + scrypt
 - **No plaintext in git**: Only encrypted data is committed
 - **Per-device keys**: Each device has its own keypair
 
@@ -136,9 +132,9 @@ env-vault get .env                # Writes to .env file
 ### "Vault not initialized"
 - Run `env-vault init` to create your identity first
 
-### Installation fails with node-gyp errors
-- Ensure you have C++ build tools installed (see Prerequisites)
-- Try: `npm install -g env-vault --build-from-source`
+### Installation fails
+- Ensure you have Node.js 18 or higher
+- Try: `npm cache clean --force && npm install -g @bora-technologies/env-vault`
 
 ## License
 

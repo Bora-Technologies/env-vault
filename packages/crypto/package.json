@@ -4,7 +4,6 @@
   "main": "index.js",
   "dependencies": {
     "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1",
-    "argon2": "^0.31.0"
+    "tweetnacl-util": "^0.15.1"
   }
 }

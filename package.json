@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@env-vault/crypto": "file:./packages/crypto",
-    "argon2": "^0.31.0",
     "commander": "^11.0.0",
     "dotenv": "^16.3.1",
     "inquirer": "^8.2.6",
