@@ -4,7 +4,15 @@ const { unlockVault } = require('../lib/unlock');
 const inquirer = require('inquirer');
 
 async function share(repoName, pubkeyBase64, label) {
-  const isLocal = repoName === '.';
+  let isLocal = repoName === '.';
+
+  // If not explicitly '.', check if it matches the local repo name
+  if (!isLocal && vault.hasLocalVault()) {
+    const localRepoName = vault.getRepoNameFromDir();
+    if (repoName === localRepoName) {
+      isLocal = true;
+    }
+  }
 
   if (isLocal) {
     if (!vault.hasLocalVault()) {
