@@ -4,9 +4,19 @@ const { unlockVault } = require('../lib/unlock');
 const inquirer = require('inquirer');
 
 async function share(repoName, pubkeyBase64, label) {
-  if (!vault.repoExists(repoName)) {
-    console.error(`Repository "${repoName}" not found`);
-    process.exit(1);
+  const isLocal = repoName === '.';
+
+  if (isLocal) {
+    if (!vault.hasLocalVault()) {
+      console.error('No .env-vault found in this directory.');
+      console.error('Run: env-vault init-repo');
+      process.exit(1);
+    }
+  } else {
+    if (!vault.repoExists(repoName)) {
+      console.error(`Repository "${repoName}" not found`);
+      process.exit(1);
+    }
   }
 
   // Decode the recipient's public key
@@ -40,7 +50,9 @@ async function share(repoName, pubkeyBase64, label) {
   const myFingerprint = crypto.getFingerprint(publicKey);
 
   // Load recipients
-  const { dek_version, recipients } = vault.loadRecipients(repoName);
+  const { dek_version, recipients } = isLocal
+    ? vault.loadLocalRecipients()
+    : vault.loadRecipients(repoName);
 
   // Check if recipient already has access
   if (recipients[recipientFingerprint]) {
@@ -78,9 +90,15 @@ async function share(repoName, pubkeyBase64, label) {
   };
 
   // Save updated recipients
-  vault.saveRecipients(repoName, recipients, dek_version);
+  if (isLocal) {
+    vault.saveLocalRecipients(recipients, dek_version);
+  } else {
+    vault.saveRecipients(repoName, recipients, dek_version);
+  }
 
-  console.log(`\nShared "${repoName}" with:`);
+  const displayRepoName = isLocal ? vault.getRepoNameFromDir() : repoName;
+
+  console.log(`\nShared "${displayRepoName}" with:`);
   console.log(`  Label: ${recipientLabel}`);
   console.log(`  Fingerprint: ${recipientFingerprint}`);
   console.log(`\nTotal recipients: ${Object.keys(recipients).length}`);
