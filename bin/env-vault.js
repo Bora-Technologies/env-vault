@@ -15,8 +15,8 @@ const program = new Command();
 program
   .name('env-vault')
   .description('Secure .env file management with sharing and sync')
-  .version(require('../package.json').version, '-v, -V, --version', 'Output the version number')
-  .helpOption('-h, -H, --help', 'Display help for command');
+  .version(require('../package.json').version, '-v, --version', 'Output the version number')
+  .helpOption('-h, --help', 'Display help for command');
 
 // init command
 program
@@ -127,7 +127,7 @@ program
 
 // recipients command
 program
-  .command('recipients <repo>')
+  .command('recipients [repo]')
   .description('List recipients who have access to a repository')
   .action((repo) => {
     const recipients = require('../commands/recipients');
