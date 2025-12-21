@@ -118,6 +118,7 @@ async function get(repoName, outputFile, options = {}) {
           choices: [
             { name: 'Replace - Overwrite the existing file completely', value: 'replace' },
             { name: 'Merge - Add new keys and update existing ones', value: 'merge' },
+            { name: 'Preview - See changes before merging', value: 'preview' },
             { name: 'Cancel - Keep existing file unchanged', value: 'cancel' }
           ]
         }
@@ -128,28 +129,106 @@ async function get(repoName, outputFile, options = {}) {
         return;
       }
 
-      if (action === 'merge') {
-        const existingEnv = parseEnv(existingContent);
-        const newEnv = parseEnv(content);
+      const existingLines = existingContent.split('\n');
+      const newEnv = parseEnv(content);
+      const updates = {};
+      const additions = {};
 
-        // Count changes
-        let added = 0;
-        let updated = 0;
-
-        for (const [key, value] of Object.entries(newEnv)) {
-          if (!(key in existingEnv)) {
-            added++;
-          } else if (existingEnv[key] !== value) {
-            updated++;
+      // Analyze changes
+      for (const [key, value] of Object.entries(newEnv)) {
+        let found = false;
+        // Check if key exists in current file
+        for (const line of existingLines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('#')) continue;
+          const eqIndex = trimmed.indexOf('=');
+          if (eqIndex > 0) {
+            const currentKey = trimmed.substring(0, eqIndex).trim();
+            if (currentKey === key) {
+              found = true;
+              const currentValue = trimmed.substring(eqIndex + 1);
+              if (currentValue !== value) {
+                updates[key] = { old: currentValue, new: value };
+              }
+              break;
+            }
           }
-          existingEnv[key] = value;
         }
+        if (!found) {
+          additions[key] = value;
+        }
+      }
 
-        const mergedContent = stringifyEnv(existingEnv);
-        fs.writeFileSync(targetFile, mergedContent);
-        console.log(`Merged into ${targetFile} (${added} added, ${updated} updated)`);
+      if (Object.keys(updates).length === 0 && Object.keys(additions).length === 0) {
+        console.log('No changes needed. File is up to date.');
         return;
       }
+
+      // Preview
+      if (action === 'preview' || action === 'merge') {
+        if (Object.keys(updates).length > 0) {
+          console.log('\nUpdates:');
+          for (const [key, change] of Object.entries(updates)) {
+            console.log(`  ${key}: ${change.old} -> ${change.new}`);
+          }
+        }
+        if (Object.keys(additions).length > 0) {
+          console.log('\nAdditions:');
+          for (const [key, value] of Object.entries(additions)) {
+            console.log(`  + ${key}=${value}`);
+          }
+        }
+        console.log();
+
+        if (action === 'preview') {
+          const { confirm } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirm',
+              message: 'Apply these changes?',
+              default: true
+            }
+          ]);
+          if (!confirm) {
+            console.log('Cancelled.');
+            return;
+          }
+        }
+      }
+
+      // Apply merge preserving comments/structure
+      const newLines = [];
+      const appliedKeys = new Set();
+
+      for (const line of existingLines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) {
+          newLines.push(line);
+          continue;
+        }
+
+        const eqIndex = trimmed.indexOf('=');
+        if (eqIndex > 0) {
+          const key = trimmed.substring(0, eqIndex).trim();
+          if (newEnv[key] !== undefined) {
+            newLines.push(`${key}=${newEnv[key]}`);
+            appliedKeys.add(key);
+            continue;
+          }
+        }
+        newLines.push(line);
+      }
+
+      // Append additions
+      for (const [key, value] of Object.entries(newEnv)) {
+        if (!appliedKeys.has(key)) {
+          newLines.push(`${key}=${value}`);
+        }
+      }
+
+      fs.writeFileSync(targetFile, newLines.join('\n'));
+      console.log(`Merged into ${targetFile}`);
+      return;
     }
 
     // Replace or new file
