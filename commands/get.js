@@ -95,17 +95,26 @@ async function get(repoName, outputFile, options = {}) {
 
   const content = decrypted.toString('utf8');
 
+  // Determine output behavior
+  let targetFile = outputFile;
+  const shouldPrint = options.print;
+
+  // Default to .env if no file specified and not printing
+  if (!targetFile && !shouldPrint) {
+    targetFile = '.env';
+  }
+
   // Output
-  if (outputFile) {
+  if (targetFile) {
     // Check if file already exists
-    if (fs.existsSync(outputFile)) {
-      const existingContent = fs.readFileSync(outputFile, 'utf8');
+    if (fs.existsSync(targetFile)) {
+      const existingContent = fs.readFileSync(targetFile, 'utf8');
 
       const { action } = await inquirer.prompt([
         {
           type: 'list',
           name: 'action',
-          message: `${outputFile} already exists. What would you like to do?`,
+          message: `${targetFile} already exists. What would you like to do?`,
           choices: [
             { name: 'Replace - Overwrite the existing file completely', value: 'replace' },
             { name: 'Merge - Add new keys and update existing ones', value: 'merge' },
@@ -137,15 +146,15 @@ async function get(repoName, outputFile, options = {}) {
         }
 
         const mergedContent = stringifyEnv(existingEnv);
-        fs.writeFileSync(outputFile, mergedContent);
-        console.log(`Merged into ${outputFile} (${added} added, ${updated} updated)`);
+        fs.writeFileSync(targetFile, mergedContent);
+        console.log(`Merged into ${targetFile} (${added} added, ${updated} updated)`);
         return;
       }
     }
 
     // Replace or new file
-    fs.writeFileSync(outputFile, content);
-    console.log(`Secrets written to ${outputFile}`);
+    fs.writeFileSync(targetFile, content);
+    console.log(`Secrets written to ${targetFile}`);
   } else {
     process.stdout.write(content);
   }

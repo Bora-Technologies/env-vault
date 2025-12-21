@@ -79,7 +79,8 @@ program
 program
   .command('get [repo]')
   .description('Get decrypted secrets for a repository (use "." for local .env-vault)')
-  .argument('[file]', 'Path to write .env file (outputs to stdout if not provided)')
+  .argument('[file]', 'Path to write .env file (defaults to .env, use -p to print)')
+  .option('-p, --print', 'Print to stdout instead of writing to file')
   .option('--local', 'Use local .env-vault/ in current directory')
   .action(async (repo, file, options) => {
     const get = require('../commands/get');
