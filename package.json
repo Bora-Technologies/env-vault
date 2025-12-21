@@ -1,6 +1,6 @@
 {
   "name": "@bora-technologies/env-vault",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Secure environment variable management with encryption and sharing",
   "bin": {
     "env-vault": "./bin/env-vault.js"
