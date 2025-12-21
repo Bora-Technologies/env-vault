@@ -1,0 +1,48 @@
+{
+  "name": "@bora-technologies/env-vault",
+  "version": "0.0.1",
+  "description": "Secure environment variable management with encryption and sharing",
+  "bin": {
+    "env-vault": "./bin/env-vault.js"
+  },
+  "files": [
+    "bin",
+    "commands",
+    "lib",
+    "packages"
+  ],
+  "keywords": [
+    "env",
+    "environment",
+    "variables",
+    "secrets",
+    "vault",
+    "dotenv",
+    "cli",
+    "encryption",
+    "security"
+  ],
+  "author": "Bora Technologies",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bora-Technologies/env-vault.git"
+  },
+  "homepage": "https://github.com/Bora-Technologies/env-vault#readme",
+  "bugs": {
+    "url": "https://github.com/Bora-Technologies/env-vault/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@env-vault/crypto": "file:./packages/crypto",
+    "argon2": "^0.31.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.3.1",
+    "inquirer": "^8.2.6",
+    "simple-git": "^3.20.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
+  }
+}

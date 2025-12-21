@@ -1,0 +1,32 @@
+# Git
+.git/
+.gitignore
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Development
+.claude/
+*.log
+npm-debug.log*
+
+# Lock files (users will generate their own)
+package-lock.json
+
+# Test files
+__tests__/
+*.test.js
+*.spec.js
+coverage/
