@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name('env-vault')
   .description('Secure .env file management with sharing and sync')
-  .version('0.0.5', '-v, -V, --version', 'Output the version number')
+  .version(require('../package.json').version, '-v, -V, --version', 'Output the version number')
   .helpOption('-h, -H, --help', 'Display help for command');
 
 // init command
