@@ -22,7 +22,7 @@ async function promptForDetails(repoName, filePath) {
     return { proceed: true, meta: null };
   }
 
-  const sourceLabel = filePath ? filePath : 'stdin';
+  const sourceLabel = filePath ? filePath : (fs.existsSync('.env') ? '.env (found in current dir)' : 'stdin');
   const { proceed } = await inquirer.prompt([
     {
       type: 'confirm',
@@ -81,9 +81,22 @@ async function add(repoName, filePath, options = {}) {
   }
 
   // Determine if using local or central storage
-  const useLocal = options.local || repoName === '.' || vault.hasLocalVault();
+  // If no repo provided, default to local if initialized or in generic context
+  let targetRepo = repoName;
+  if (!targetRepo) {
+    if (vault.hasLocalVault()) {
+      targetRepo = '.';
+    } else {
+      console.error('Missing repository argument.');
+      console.error('Usage: env-vault add <repo> [file]');
+      console.error('Or run "env-vault init-repo" to start a local vault first.');
+      process.exit(1);
+    }
+  }
 
-  const displayName = useLocal ? vault.getRepoNameFromDir() : repoName;
+  const useLocal = options.local || targetRepo === '.' || (vault.hasLocalVault() && targetRepo === vault.getRepoNameFromDir());
+
+  const displayName = useLocal ? vault.getRepoNameFromDir() : targetRepo;
 
   const { proceed, meta } = await promptForDetails(displayName, filePath);
   if (!proceed) {
@@ -96,9 +109,17 @@ async function add(repoName, filePath, options = {}) {
   if (filePath) {
     content = fs.readFileSync(filePath, 'utf8');
   } else {
-    // Read from stdin
-    console.log('Reading from stdin (Ctrl+D to finish)...');
-    content = await readStdin();
+    // Check if .env exists in current directory
+    if (fs.existsSync('.env')) {
+      // We already prompted user above confirmation to use found .env or stdin is implied if they said yes to sourceLabel check
+      // But wait, promptForDetails sourceLabel logic was just display text. We need to actually align logic.
+      // The prompt text said "from .env (found...)" so we should use it.
+      content = fs.readFileSync('.env', 'utf8');
+    } else {
+      // Read from stdin
+      console.log('Reading from stdin (Ctrl+D to finish)...');
+      content = await readStdin();
+    }
   }
 
   if (!content || content.trim() === '') {
@@ -112,7 +133,7 @@ async function add(repoName, filePath, options = {}) {
   const fingerprint = crypto.getFingerprint(publicKey);
 
   // Check if repo already exists
-  const isUpdate = useLocal ? vault.hasLocalVault() : vault.repoExists(repoName);
+  const isUpdate = useLocal ? vault.hasLocalVault() : vault.repoExists(targetRepo);
 
   // Generate a new DEK (Data Encryption Key)
   const dek = crypto.generateDEK();
@@ -129,7 +150,7 @@ async function add(repoName, filePath, options = {}) {
     try {
       const existing = useLocal
         ? vault.loadLocalRecipients()
-        : vault.loadRecipients(repoName);
+        : vault.loadRecipients(targetRepo);
       dekVersion = (existing.dek_version || 0) + 1;
 
       // Re-wrap DEK for all existing recipients
@@ -165,11 +186,11 @@ async function add(repoName, filePath, options = {}) {
       vault.saveLocalMeta(meta);
     }
   } else {
-    vault.createRepoDir(repoName);
-    vault.saveSecrets(repoName, encryptedContent);
-    vault.saveRecipients(repoName, recipients, dekVersion);
+    vault.createRepoDir(targetRepo);
+    vault.saveSecrets(targetRepo, encryptedContent);
+    vault.saveRecipients(targetRepo, recipients, dekVersion);
     if (meta) {
-      vault.saveMeta(repoName, meta);
+      vault.saveMeta(targetRepo, meta);
     }
   }
 

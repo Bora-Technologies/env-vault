@@ -59,7 +59,7 @@ program
 
 // add command
 program
-  .command('add <repo>')
+  .command('add [repo]')
   .description('Add or update secrets for a repository')
   .argument('[file]', 'Path to .env file (reads from stdin if not provided)')
   .option('--local', 'Use local .env-vault/ in current directory')
