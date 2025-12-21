@@ -169,6 +169,16 @@ program
     await migrate();
   });
 
+// reset command
+program
+  .command('reset')
+  .description('Delete vault and start fresh (use if you forgot password)')
+  .option('-f, --force', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const reset = require('../commands/reset');
+    await reset(options);
+  });
+
 // Cloud sync commands (requires backend setup - coming soon)
 // To enable, set ENV_VAULT_SUPABASE_URL and ENV_VAULT_SUPABASE_ANON_KEY
 
