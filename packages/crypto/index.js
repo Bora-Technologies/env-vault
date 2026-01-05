@@ -3,9 +3,11 @@ const aes = require('./aes');
 const x25519 = require('./x25519');
 
 module.exports = {
-  // Key derivation (Argon2id)
+  // Key derivation (scrypt with hardened parameters)
   deriveKey: kdf.deriveKey,
+  deriveKeyLegacy: kdf.deriveKeyLegacy,
   generateSalt: kdf.generateSalt,
+  SCRYPT_CONFIG: kdf.SCRYPT_CONFIG,
 
   // AES-256-GCM encryption
   encrypt: aes.encrypt,

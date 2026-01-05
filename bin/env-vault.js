@@ -181,6 +181,16 @@ program
     await reset(options);
   });
 
+// doctor command - security health check
+program
+  .command('doctor')
+  .description('Check vault security (permissions, config, crypto)')
+  .option('--fix', 'Automatically fix permission issues')
+  .action(async (options) => {
+    const doctor = require('../commands/doctor');
+    await doctor(options);
+  });
+
 // Cloud sync commands (requires backend setup - coming soon)
 // To enable, set ENV_VAULT_SUPABASE_URL and ENV_VAULT_SUPABASE_ANON_KEY
 

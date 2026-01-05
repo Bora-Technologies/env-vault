@@ -60,6 +60,14 @@ env-vault share . <their-public-key>
 | `clone <git-url>` | Clone an existing vault from git |
 | `migrate` | Migrate repos from central vault to per-project storage |
 
+### Maintenance Commands
+
+| Command | Description |
+|---------|-------------|
+| `doctor` | Check vault security (permissions, config) |
+| `doctor --fix` | Automatically fix permission issues |
+| `reset` | Delete vault and start fresh |
+
 ## How It Works
 
 env-vault uses public-key cryptography to securely store and share environment variables:
@@ -110,9 +118,28 @@ env-vault get .env                # Writes to .env file
 
 - **End-to-end encryption**: Secrets are encrypted locally before storage
 - **Zero-knowledge**: Private keys never leave your device
-- **Proven cryptography**: X25519 + AES-256-GCM + scrypt
+- **Proven cryptography**: X25519 + AES-256-GCM + scrypt (N=2^17)
 - **No plaintext in git**: Only encrypted data is committed
 - **Per-device keys**: Each device has its own keypair
+- **Restrictive permissions**: All files 0600, directories 0700
+
+### Security Commands
+
+```bash
+env-vault doctor          # Check vault security
+env-vault doctor --fix    # Fix permission issues
+npm test                  # Run security tests
+```
+
+### Best Practices
+
+- Use a strong master password (16+ characters or passphrase)
+- Store your master password in a password manager
+- Add `.env*` to `.gitignore`
+- Revoke access and re-key when team members leave
+
+See [SECURITY.md](SECURITY.md) for threat model and cryptographic details.
+See [TEAM.md](TEAM.md) for team onboarding and workflows.
 
 ## File Locations
 
